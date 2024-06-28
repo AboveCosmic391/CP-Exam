@@ -6,56 +6,70 @@
     <title>Cloud Practitioner Practice Test</title>
     
     <link rel="stylesheet" href="./css/styles.css">
-    
+
 </head>
 <body onload="initUI()">
+
+    <!-------------------NAVIGATION AREA----------------------------->
     <div class="flex-admin-top-bar">
         <h1>
-            Practice Test
+            Cloud Practitioner Practice Exam
         </h1>
         <button class="admin-button" onclick="startTest()">
             Start Test
         </button>
 
-        <!-- <button class="admin-button" onclick="readBenefits()">
-            Start Test
-        </button> -->
+
         <div class="progress-holder">
-            <p class="progress-status" style="margin: 0; padding: 0;">
+            <p id="progress-status" class="progress-status" style="margin: 0; padding: 0;">
                 0/50
             </p>
-            <button class="admin-button score-button">
+            <button class="admin-button score-button" onclick="scoreExam()">
                 Score Test
             </button>
         </div>
 
     </div>
+
+
+
+
+
+    <!---------------QUESTION AREA--------------------------------------------->
     
     <div class="question-area-centered" id="question-container">
         <p id="question"></p>
-        <div class="options">
+        <div class="options" id="options-area">
             <label for="A"><input type="radio" id="A" name="answer"> <span id="optionA"></span></label>
             <label for="B"><input type="radio" id="B" name="answer"> <span id="optionB"></span></label>
             <label for="C"><input type="radio" id="C" name="answer"> <span id="optionC"></span></label>
             <label for="D"><input type="radio" id="D" name="answer"> <span id="optionD"></span></label>
         </div>
-        <button class="checkAnswerButton" onclick="checkAnswer()">
-            Check Answer 
-        </button>
+
+        <div class="button-holder" id="button-holder">
+
+            <button class="button-main checkAnswerButton" onclick="checkAnswer()">
+                Check Answer 
+            </button>
+
+            <button class="button-main next-button" id="next-button" onclick="incrementQuestion()">
+                Next
+            </button>
+
+        </div>
+        
         <div class="answer-area" id="answer-area">
+            <h2 id="right-answer">Right!</h2>
+            <h2 id="wrong-answer">Incorrect</h2>
             <p class="correct-answer" id="correct-answer">
 
             </p>
             <p class="justification" id="justification">
 
             </p>
-            <button class="next-button" id="next-button" onclick="incrementQuestion()">
-                Next
-            </button>
+
         </div>
-        <!-- <select id="explanation" style="margin-top: 20px;">
-            <option value="">Select to view justification and correct answer</option>
-        </select> -->
+
     </div>
     
 
@@ -71,7 +85,8 @@
 
 
     <!------------------------ JAVASCRIPT AREA ------------------------>
-    <script src="scripts/1-1-benefits"></script>
+    <script src="scripts/1-1-benefits.js"></script>
+    <script src="scripts/1-2-design.js"></script>
     <script src="scripts/testList.js"></script>
     
     <script>
@@ -81,22 +96,36 @@
         var correctAnswerCount = 0;
         const totalQuestions = 50;
 
+        // radio button variables
+        var chosenOptionID;
+        var chosenOptionText;
+        var isButtonChecked = false;
+
         // UI elements
         const answerArea = document.getElementById('answer-area');
         const questionAreaElement = document.getElementById('question-container')
         const questionElement = document.getElementById('question');
         const correctAnswer = document.getElementById('correct-answer');
         const justificationInformation = document.getElementById('justification');
+        const buttonHolder = document.getElementById('button-holder');
+        const rightAnswer = document.getElementById('right-answer');
+        const wrongAnswer = document.getElementById('wrong-answer');
 
         // logic
-        var testList = [];
+        var testList = compileList();
+        console.log("Test List: " + JSON.stringify(testList));
         var sortedList = [];
 
 
         function initUI(){
+            console.log("Init UI Function called");
             answerArea.style.display = 'none';
             questionAreaElement.style.display = 'none';
-            
+            correctAnswer.style.display = 'none';
+            justificationInformation.style.display = 'none';
+            buttonHolder.style.display = 'none';
+            rightAnswer.style.display = 'none';
+            wrongAnswer.style.display = 'none';
         }
 
 
@@ -106,44 +135,93 @@
             input.addEventListener('change', function() {
                 if (this.checked) {
                     // Accessing the span that follows the input
-                    let optionText = this.nextElementSibling.textContent;
+                    // let optionText = this.nextElementSibling.textContent;
+                    chosenOptionText = this.nextElementSibling.textContent;
+                    chosenOptionID = this.id;
 
                     // Accessing the class name of the div that contains the input
-                    let className = this.closest('.options').className;
+                    // let className = this.closest('.options').className;
 
-                    console.log('Selected Option:', this.id);
-                    console.log('Option Text:', optionText);
-                    console.log('Container Class Name:', className);
+                    // console.log('Selected Option:', this.id);
+                    // console.log('Option Text:', optionText);
+                    // console.log('Container Class Name:', className);
                 }
             });
         });
 
+        // window.onload = function() {
+        //     clearRadioButtons();
+        // };
+
+        // function clearRadioButtons() {
+        //     const radioButtons = document.querySelectorAll('input[name="answer"]');
+        //     radioButtons.forEach(radio => radio.checked = false);
+        //     const optionsContainer = document.getElementById('options-area');
+        //     optionsContainer.style.display = 'none';
+        // }
+
+
         function checkAnswer(){
             console.log("Check Answer button clicked");
-            answerArea.style.display = 'block';
+            const optionA = document.getElementById('A');
+            const optionB = document.getElementById('B');
+            const optionC = document.getElementById('C');
+            const optionD = document.getElementById('D');
+
+            if(optionA.checked){
+                isButtonChecked = true;
+            }else if(optionB.checked){
+                isButtonChecked = true;
+            }
+            else if(optionC.checked){
+                isButtonChecked = true;
+            }else if(optionD.checked){
+                isButtonChecked = true;
+            }
+
+            if(isButtonChecked){
+                console.log("A radio button was checked");
+                console.log("Radio button Text: " + chosenOptionText);
+                answerArea.style.display = 'block';
+                displayAnswers();
+                if(chosenOptionID === testList[currentQuestionNumber].correctAnswer){
+                    console.log("Your scored correctly!");
+                    rightAnswer.style.display = 'block';
+                    wrongAnswer.style.display = 'none';
+                }else{
+                    console.log("You are incorrect");
+                    wrongAnswer.style.display = 'block';
+                    rightAnswer.style.display = 'none';
+                }
+            }
+            else{
+                console.log("No radio button was checked");
+                alert("You must select an option.")
+            }
+
+
         }
 
         function displayAnswers(){
 
             // const correctAnswer = document.getElementById('correct-answer');
-            const answerTextLetter = cloudConcepts[currentQuestionNumber].correctAnswer;
-            correctAnswer.innerHTML = "<strong>Correct Answer:</strong> " + answerTextLetter + " - " + cloudConcepts[currentQuestionNumber].options[answerTextLetter];
+            const answerTextLetter = testList[currentQuestionNumber].correctAnswer;
+            correctAnswer.innerHTML = "<strong>Correct Answer:</strong> " + answerTextLetter + " - " + testList[currentQuestionNumber].options[answerTextLetter];
 
             // const justificationInformation = document.getElementById('justification');
-            justificationInformation.textContent = cloudConcepts[currentQuestionNumber].justification
+            justificationInformation.textContent = testList[currentQuestionNumber].justification
         }
 
         function startTest(){
 
+            console.log("Start Test function called");
             let conceptsDomainCount = 0;
             let securityDomainCount = 0;
             let technologyDomainCount = 0;
             let billingDomainCount = 0;
 
             // prepare test list
-            while(testList < 50){
-                
-            }
+
 
             // sort test list to random order 
 
@@ -156,25 +234,62 @@
 
         function incrementQuestion(){
             currentQuestionNumber = currentQuestionNumber + 1;
+            let progress = document.getElementById('progress-status');
+            progress.textContent = currentQuestionNumber + "/50";
             displayNextQuestion();
         }
 
         function displayNextQuestion(){
             // const questionElement = document.getElementById('question');
-            questionElement.textContent = cloudConcepts[currentQuestionNumber].question;
-            document.getElementById('optionA').textContent = cloudConcepts[currentQuestionNumber].options.A;
-            document.getElementById('optionB').textContent = cloudConcepts[currentQuestionNumber].options.B;
-            document.getElementById('optionC').textContent = cloudConcepts[currentQuestionNumber].options.C;
-            document.getElementById('optionD').textContent = cloudConcepts[currentQuestionNumber].options.D;
+            // console.log("Display Next Question Called");
+            // console.log("Current question number: " + currentQuestionNumber);
+            // console.log("Logging..." + testList[0].question);
+            // console.log("Current question number as a variable: " + currentQuestionNumber);
+            // console.log("Logging from the variable: " + testList[currentQuestionNumber].question);
+            // clearRadioButtons();
+            chosenOptionText = '';
 
-            // const correctAnswer = document.getElementById('correct-answer');
-            // const answerTextLetter = cloudConcepts[currentQuestionNumber].correctAnswer;
-            // correctAnswer.innerHTML = "<strong>Correct Answer:</strong> " + answerTextLetter + " - " + cloudConcepts[currentQuestionNumber].options[answerTextLetter];
+            answerArea.style.display = 'block';
+            questionAreaElement.style.display = 'block';
+            buttonHolder.style.display = 'flex';
 
-            // // correctAnswer.textContent = "Correct Answer: " + answerTextLetter + " - " + cloudConcepts[0].options[answerTextLetter];
 
-            // const justificationInformation = document.getElementById('justification');
-            // justificationInformation.textContent = cloudConcepts[currentQuestionNumber].justification
+            questionElement.style.display = 'block';
+            questionElement.textContent = testList[currentQuestionNumber].question;
+            document.getElementById('optionA').textContent = benefitsOfCloudComputing[currentQuestionNumber].options.A;
+            document.getElementById('optionB').textContent = benefitsOfCloudComputing[currentQuestionNumber].options.B;
+            document.getElementById('optionC').textContent = benefitsOfCloudComputing[currentQuestionNumber].options.C;
+            document.getElementById('optionD').textContent = benefitsOfCloudComputing[currentQuestionNumber].options.D;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // SCORING PROCESS
+
+        function areAnyOptionsChecked() {
+            const options = document.querySelectorAll('input[name="answer"]');
+            for (let option of options) {
+                if (option.checked) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        function scoreExam(){
+            alert("Are you sure you want to score this exam?");
         }
 
 
