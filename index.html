@@ -15,8 +15,11 @@
         <h1>
             Cloud Practitioner Practice Exam
         </h1>
-        <button class="admin-button" onclick="startTest()">
+        <button class="admin-button" onclick="beginExam()">
             Start Test
+        </button>
+        <button class="admin-button" onclick="beginExam()">
+            All ?s
         </button>
 
 
@@ -40,9 +43,9 @@
     <div class="question-area-centered" id="question-container">
         <p id="question"></p>
         <div class="options" id="options-area">
-            <label for="A"><input type="radio" id="A" name="answer"> <span id="optionA"></span></label>
-            <label for="B"><input type="radio" id="B" name="answer"> <span id="optionB"></span></label>
-            <label for="C"><input type="radio" id="C" name="answer"> <span id="optionC"></span></label>
+            <label for="A"><input type="radio" id="A" name="answer"> <span id="optionA"></span></label><br>
+            <label for="B"><input type="radio" id="B" name="answer"> <span id="optionB"></span></label><br>
+            <label for="C"><input type="radio" id="C" name="answer"> <span id="optionC"></span></label><br>
             <label for="D"><input type="radio" id="D" name="answer"> <span id="optionD"></span></label>
         </div>
 
@@ -52,7 +55,7 @@
                 Check Answer 
             </button>
 
-            <button class="button-main next-button" id="next-button" onclick="incrementQuestion()">
+            <button class="button-main next-button" id="next-button" onclick="advanceToNextQuestion()">
                 Next
             </button>
 
@@ -65,6 +68,12 @@
 
             </p>
             <p class="justification" id="justification">
+
+            </p>
+            <p class="domain" id="domain">
+
+            </p>
+            <p class="sub-domain" id="sub-domain">
 
             </p>
 
@@ -85,16 +94,37 @@
 
 
     <!------------------------ JAVASCRIPT AREA ------------------------>
+
     <script src="scripts/1-1-benefits.js"></script>
     <script src="scripts/1-2-design.js"></script>
+    <script src="scripts/1-3-migration.js"></script>
+    <script src="scripts/1-4-economics.js"></script>
+
+    <script src="scripts/2-1-responsibility.js"></script>
+    <script src="scripts/2-2-compliance.js"></script>
+    <script src="scripts/2-3-access.js"></script>
+    <script src="scripts/2-4-security.js"></script>
+
+    <script src="scripts/3-1-deploying.js"></script>
+    <script src="scripts/3-2-infrastructure.js"></script>
+
+
+
     <script src="scripts/testList.js"></script>
     
+
+
+
+
+
+
     <script>
 
         // variables and constants 
         var currentQuestionNumber = 0;
         var correctAnswerCount = 0;
         const totalQuestions = 50;
+        var progressCounter = 0;
 
         // radio button variables
         var chosenOptionID;
@@ -105,15 +135,27 @@
         const answerArea = document.getElementById('answer-area');
         const questionAreaElement = document.getElementById('question-container')
         const questionElement = document.getElementById('question');
-        const correctAnswer = document.getElementById('correct-answer');
+        const correctAnswerUI = document.getElementById('correct-answer');
         const justificationInformation = document.getElementById('justification');
         const buttonHolder = document.getElementById('button-holder');
         const rightAnswer = document.getElementById('right-answer');
         const wrongAnswer = document.getElementById('wrong-answer');
+        const domainPara = document.getElementById("domain");
+        const subDomainPara = document.getElementById("sub-domain");
+        const progress = document.getElementById('progress-status');
 
         // logic
         var testList = compileList();
-        console.log("Test List: " + JSON.stringify(testList));
+        for(var i = 0; i < testList.length; i++){
+            console.log("Test List #" + i + ": " + testList[i].question);
+            console.log("Test List #" + i + ": " + testList[i].id);
+            console.log("Test List #" + i + ": " + testList[i].options);
+            console.log("Test List #" + i + ": " + testList[i].correctAnswer);
+        }
+        console.log("Length of testList: " + testList.length);
+        console.log("Test List retrieved: Index.HTML: " + testList);
+        console.log("Test List retrieved: Index.HTML: ID: " + testList[0].id);
+        // console.log("Test List: " + JSON.stringify(testList));
         var sortedList = [];
 
 
@@ -121,11 +163,13 @@
             console.log("Init UI Function called");
             answerArea.style.display = 'none';
             questionAreaElement.style.display = 'none';
-            correctAnswer.style.display = 'none';
+            correctAnswerUI.style.display = 'none';
             justificationInformation.style.display = 'none';
             buttonHolder.style.display = 'none';
             rightAnswer.style.display = 'none';
             wrongAnswer.style.display = 'none';
+            domainPara.style.display = 'none';
+            subDomainPara.style.display = 'none';
         }
 
 
@@ -134,31 +178,25 @@
         document.querySelectorAll('input[name="answer"]').forEach(input => {
             input.addEventListener('change', function() {
                 if (this.checked) {
-                    // Accessing the span that follows the input
-                    // let optionText = this.nextElementSibling.textContent;
                     chosenOptionText = this.nextElementSibling.textContent;
                     chosenOptionID = this.id;
-
-                    // Accessing the class name of the div that contains the input
-                    // let className = this.closest('.options').className;
-
-                    // console.log('Selected Option:', this.id);
-                    // console.log('Option Text:', optionText);
-                    // console.log('Container Class Name:', className);
                 }
             });
         });
 
-        // window.onload = function() {
-        //     clearRadioButtons();
-        // };
-
-        // function clearRadioButtons() {
-        //     const radioButtons = document.querySelectorAll('input[name="answer"]');
-        //     radioButtons.forEach(radio => radio.checked = false);
-        //     const optionsContainer = document.getElementById('options-area');
-        //     optionsContainer.style.display = 'none';
-        // }
+        function beginExam(){
+            console.log("Exam beginning and 'start test' button clicked");  
+            answerArea.style.display = 'block';
+            questionAreaElement.style.display = 'block';
+            buttonHolder.style.display = 'flex';
+            questionElement.style.display = 'block';
+            console.log("Begin Exam: Question number: " + currentQuestionNumber);
+            console.log("Begin Exam: Question number minus one: " + currentQuestionNumber - 1);
+            displayNextQuestion();
+            // incrementQuestionCounter();
+            progressCounter = progressCounter + 1;
+            progress.textContent = progressCounter + "/50";
+        }
 
 
         function checkAnswer(){
@@ -182,12 +220,19 @@
             if(isButtonChecked){
                 console.log("A radio button was checked");
                 console.log("Radio button Text: " + chosenOptionText);
+                console.log("Correct answer text for current question: " + testList[currentQuestionNumber].options[chosenOptionID])
+
+                console.log("Selected Radio button letter: " + chosenOptionID);
+                console.log("Correct Answer Letter Option for current question: " + testList[currentQuestionNumber].correctAnswer);
                 answerArea.style.display = 'block';
-                displayAnswers();
+                // displayAnswers();
                 if(chosenOptionID === testList[currentQuestionNumber].correctAnswer){
                     console.log("Your scored correctly!");
                     rightAnswer.style.display = 'block';
                     wrongAnswer.style.display = 'none';
+                    domainPara.style.display = 'block';
+                    subDomainPara.style.display = 'block';
+                    displayAnswers();
                 }else{
                     console.log("You are incorrect");
                     wrongAnswer.style.display = 'block';
@@ -195,7 +240,7 @@
                 }
             }
             else{
-                console.log("No radio button was checked");
+                // console.log("No radio button was checked");
                 alert("You must select an option.")
             }
 
@@ -203,63 +248,91 @@
         }
 
         function displayAnswers(){
-
-            // const correctAnswer = document.getElementById('correct-answer');
+            // console.log("Display answers function called");
+            correctAnswerUI.style.display = 'block';
+            justificationInformation.style.display = 'block';
             const answerTextLetter = testList[currentQuestionNumber].correctAnswer;
-            correctAnswer.innerHTML = "<strong>Correct Answer:</strong> " + answerTextLetter + " - " + testList[currentQuestionNumber].options[answerTextLetter];
-
-            // const justificationInformation = document.getElementById('justification');
-            justificationInformation.textContent = testList[currentQuestionNumber].justification
+            correctAnswerUI.innerHTML = "<strong>Correct Answer:</strong> " + answerTextLetter + " - " + testList[currentQuestionNumber].options[answerTextLetter];
+            justificationInformation.textContent = testList[currentQuestionNumber].justification;
+            domainPara.innerHTML = "<strong>Domain: </strong>" + testList[currentQuestionNumber].domain;
+            subDomainPara.innerHTML = "<strong>Task Statement: </strong>" + testList[currentQuestionNumber].subDomain;
         }
 
-        function startTest(){
+        // function startTest(){
 
-            console.log("Start Test function called");
-            let conceptsDomainCount = 0;
-            let securityDomainCount = 0;
-            let technologyDomainCount = 0;
-            let billingDomainCount = 0;
+        //     console.log("Start Test function called");
+        //     let conceptsDomainCount = 0;
+        //     let securityDomainCount = 0;
+        //     let technologyDomainCount = 0;
+        //     let billingDomainCount = 0;
 
-            // prepare test list
-
-
-            // sort test list to random order 
-
-            // display first question 
-
-            displayNextQuestion();
+        //     // prepare test list
 
 
+        //     // sort test list to random order 
+
+        //     // display first question 
+
+        //     displayNextQuestion();
+
+
+        // }
+
+        function advanceToNextQuestion(){
+            console.log("Advance to Next Question: Question number: " + currentQuestionNumber);
+            console.log("Advance to Next Question: Question number minus one: " + currentQuestionNumber - 1);
+            if(progressCounter < testList.length){
+                console.log("You may proceed");
+                incrementQuestionCounter();
+                displayNextQuestion();
+            }else{
+                alert("Time to score the exam");
+            }
+            // if(currentQuestionNumber < testList.length){
+            //     console.log("You may proceed");
+            //     incrementQuestionCounter();
+            //     displayNextQuestion();
+            // }else{
+            //     alert("Time to score the exam");
+            // }
+            
         }
 
-        function incrementQuestion(){
+        function incrementQuestionCounter(){
+            console.log("Incrementing question counter: " + currentQuestionNumber);
             currentQuestionNumber = currentQuestionNumber + 1;
-            let progress = document.getElementById('progress-status');
-            progress.textContent = currentQuestionNumber + "/50";
-            displayNextQuestion();
+            console.log("Incrementing question counter: " + currentQuestionNumber);
+
+            progressCounter = progressCounter + 1;
+            progress.textContent = progressCounter + "/50";
         }
 
         function displayNextQuestion(){
-            // const questionElement = document.getElementById('question');
-            // console.log("Display Next Question Called");
-            // console.log("Current question number: " + currentQuestionNumber);
-            // console.log("Logging..." + testList[0].question);
-            // console.log("Current question number as a variable: " + currentQuestionNumber);
-            // console.log("Logging from the variable: " + testList[currentQuestionNumber].question);
-            // clearRadioButtons();
+            // initUI();
+            console.log("Display Next Question: Question number: " + currentQuestionNumber);
+            // console.log("Display Next Question: Question number minus one: " + currentQuestionNumber - 1);
+            resetUI();
             chosenOptionText = '';
+            // clear radio buttons
+            const radioButtons = document.querySelectorAll('input[name="answer"]');
+            radioButtons.forEach(radio => radio.checked = false);
+            // const optionsContainer = document.getElementById('options-area');
+            // optionsContainer.style.display = 'none';
 
-            answerArea.style.display = 'block';
-            questionAreaElement.style.display = 'block';
-            buttonHolder.style.display = 'flex';
-
-
-            questionElement.style.display = 'block';
             questionElement.textContent = testList[currentQuestionNumber].question;
-            document.getElementById('optionA').textContent = benefitsOfCloudComputing[currentQuestionNumber].options.A;
-            document.getElementById('optionB').textContent = benefitsOfCloudComputing[currentQuestionNumber].options.B;
-            document.getElementById('optionC').textContent = benefitsOfCloudComputing[currentQuestionNumber].options.C;
-            document.getElementById('optionD').textContent = benefitsOfCloudComputing[currentQuestionNumber].options.D;
+            document.getElementById('optionA').textContent = testList[currentQuestionNumber].options.A;
+            document.getElementById('optionB').textContent = testList[currentQuestionNumber].options.B;
+            document.getElementById('optionC').textContent = testList[currentQuestionNumber].options.C;
+            document.getElementById('optionD').textContent = testList[currentQuestionNumber].options.D;
+        }
+
+        function resetUI(){
+            correctAnswerUI.style.display = 'none';
+            justificationInformation.style.display = 'none';
+            rightAnswer.style.display = 'none';
+            wrongAnswer.style.display = 'none';
+            domainPara.style.display = 'none';
+            subDomainPara.style.display = 'none';
         }
 
 
@@ -276,17 +349,6 @@
 
 
         // SCORING PROCESS
-
-        function areAnyOptionsChecked() {
-            const options = document.querySelectorAll('input[name="answer"]');
-            for (let option of options) {
-                if (option.checked) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
 
         function scoreExam(){
             alert("Are you sure you want to score this exam?");
